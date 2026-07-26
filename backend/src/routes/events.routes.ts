@@ -4,7 +4,16 @@ import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
-// Liste publique des événements publiés
+/**
+ * @swagger
+ * /events:
+ *   get:
+ *     summary: Liste des événements publiés
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: Liste des événements
+ */
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(
@@ -21,7 +30,24 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Détail d'un événement + catégories de billets
+/**
+ * @swagger
+ * /events/{id}:
+ *   get:
+ *     summary: Détail d'un événement avec ses catégories de billets
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Détail de l'événement
+ *       404:
+ *         description: Événement introuvable
+ */
 router.get("/:id", async (req, res) => {
   try {
     const event = await pool.query("SELECT * FROM events WHERE id = $1", [req.params.id]);
@@ -38,7 +64,32 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Créer un événement (organisateur)
+/**
+ * @swagger
+ * /events:
+ *   post:
+ *     summary: Créer un événement (organisateur)
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               location: { type: string }
+ *               start_date: { type: string, format: date-time }
+ *               end_date: { type: string, format: date-time }
+ *     responses:
+ *       201:
+ *         description: Événement créé
+ *       401:
+ *         description: Non authentifié
+ */
 router.post("/", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
   const { title, description, location, start_date, end_date, cover_image_url } = req.body;
   if (!title || !start_date || !end_date) {
@@ -58,7 +109,24 @@ router.post("/", authenticate, authorize("organizer", "admin"), async (req: Auth
   }
 });
 
-// Publier un événement
+/**
+ * @swagger
+ * /events/{id}/publish:
+ *   patch:
+ *     summary: Publier un événement
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Événement publié
+ */
 router.patch("/:id/publish", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
   try {
     const result = await pool.query(
@@ -74,7 +142,34 @@ router.patch("/:id/publish", authenticate, authorize("organizer", "admin"), asyn
   }
 });
 
-// Ajouter une catégorie de billets à un événement
+/**
+ * @swagger
+ * /events/{id}/categories:
+ *   post:
+ *     summary: Ajouter une catégorie de billets
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               price: { type: number }
+ *               quantity_total: { type: integer }
+ *     responses:
+ *       201:
+ *         description: Catégorie créée
+ */
 router.post("/:id/categories", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
   const { name, price, quantity_total } = req.body;
   if (!name || quantity_total == null) {
@@ -93,7 +188,24 @@ router.post("/:id/categories", authenticate, authorize("organizer", "admin"), as
   }
 });
 
-// Statistiques organisateur
+/**
+ * @swagger
+ * /events/{id}/stats:
+ *   get:
+ *     summary: Statistiques d'un événement (organisateur)
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Statistiques
+ */
 router.get("/:id/stats", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
   try {
     const stats = await pool.query(
