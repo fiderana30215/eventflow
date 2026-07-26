@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -36,6 +37,7 @@ export default function Login() {
         </div>
         <button type="submit" style={{ width: "100%" }}>Se connecter</button>
       </form>
+      <GoogleLoginButton />
       <p className="form-footer">
         Pas encore de compte ? <Link to="/register">S'inscrire</Link>
       </p>

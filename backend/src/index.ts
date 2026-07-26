@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.routes";
+import oauthRoutes from "./routes/oauth.routes";
 import eventsRoutes from "./routes/events.routes";
 import ticketsRoutes from "./routes/tickets.routes";
 import checkinsRoutes from "./routes/checkins.routes";
@@ -30,6 +31,7 @@ app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use("/api/auth", authRoutes);
+app.use("/api/auth", oauthRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/tickets", ticketsRoutes);
 app.use("/api/checkins", checkinsRoutes);
