@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -22,39 +22,35 @@ export default function Register() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "60px auto" }}>
-      <h2>Inscription</h2>
+    <div className="page-narrow">
+      <h1 className="page-title">Inscription</h1>
+      <p className="page-subtitle">Crée ton compte pour réserver ou organiser.</p>
       <form onSubmit={handleSubmit}>
-        <input
-          name="full_name"
-          placeholder="Nom complet"
-          onChange={handleChange}
-          required
-          style={{ display: "block", width: "100%", marginBottom: 10 }}
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          onChange={handleChange}
-          required
-          style={{ display: "block", width: "100%", marginBottom: 10 }}
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Mot de passe"
-          onChange={handleChange}
-          required
-          style={{ display: "block", width: "100%", marginBottom: 10 }}
-        />
-        <select name="role" onChange={handleChange} style={{ display: "block", width: "100%", marginBottom: 10 }}>
-          <option value="participant">Participant</option>
-          <option value="organizer">Organisateur</option>
-        </select>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">S'inscrire</button>
+        {error && <div className="form-error">{error}</div>}
+        <div className="form-group">
+          <label>Nom complet</label>
+          <input name="full_name" onChange={handleChange} required />
+        </div>
+        <div className="form-group">
+          <label>Email</label>
+          <input name="email" type="email" onChange={handleChange} required />
+        </div>
+        <div className="form-group">
+          <label>Mot de passe</label>
+          <input name="password" type="password" onChange={handleChange} required />
+        </div>
+        <div className="form-group">
+          <label>Je suis</label>
+          <select name="role" onChange={handleChange}>
+            <option value="participant">Participant</option>
+            <option value="organizer">Organisateur</option>
+          </select>
+        </div>
+        <button type="submit" style={{ width: "100%" }}>S'inscrire</button>
       </form>
+      <p className="form-footer">
+        Déjà un compte ? <Link to="/login">Se connecter</Link>
+      </p>
     </div>
   );
 }

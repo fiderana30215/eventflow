@@ -4,22 +4,33 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
+import Scan from "./pages/Scan";
 
 function Nav() {
   const { user, logout } = useAuth();
   return (
-    <nav style={{ display: "flex", gap: 16, padding: 16, borderBottom: "1px solid #ddd" }}>
-      <Link to="/">Événements</Link>
+    <nav className="navbar">
+      <Link to="/" className="navbar-brand">
+        EventFlow
+      </Link>
       {user ? (
-        <>
-          <span>Bonjour, {user.full_name}</span>
-          <button onClick={logout}>Déconnexion</button>
-        </>
+        <div className="navbar-user">
+          {(user.role === "organizer" || user.role === "admin") && (
+            <Link to="/scan">Scanner</Link>
+          )}
+          <span>{user.full_name}</span>
+          <span className="badge">{user.role}</span>
+          <button className="secondary" onClick={logout}>
+            Déconnexion
+          </button>
+        </div>
       ) : (
-        <>
+        <div className="navbar-links">
           <Link to="/login">Connexion</Link>
-          <Link to="/register">Inscription</Link>
-        </>
+          <Link to="/register">
+            <button>S'inscrire</button>
+          </Link>
+        </div>
       )}
     </nav>
   );
@@ -33,6 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/scan" element={<Scan />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
