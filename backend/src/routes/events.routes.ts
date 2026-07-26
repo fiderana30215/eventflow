@@ -32,6 +32,31 @@ router.get("/", async (req, res) => {
 
 /**
  * @swagger
+ * /events/mine:
+ *   get:
+ *     summary: Liste des événements de l'organisateur connecté (tous statuts)
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des événements
+ */
+router.get("/mine", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM events WHERE organizer_id = $1 ORDER BY created_at DESC",
+      [req.user!.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+/**
+ * @swagger
  * /events/{id}:
  *   get:
  *     summary: Détail d'un événement avec ses catégories de billets

@@ -5,9 +5,14 @@ import Register from "./pages/Register";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Scan from "./pages/Scan";
+import CreateEvent from "./pages/CreateEvent";
+import EventManage from "./pages/EventManage";
+import MyEvents from "./pages/MyEvents";
 
 function Nav() {
   const { user, logout } = useAuth();
+  const isOrganizer = user && (user.role === "organizer" || user.role === "admin");
+
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-brand">
@@ -15,8 +20,11 @@ function Nav() {
       </Link>
       {user ? (
         <div className="navbar-user">
-          {(user.role === "organizer" || user.role === "admin") && (
-            <Link to="/scan">Scanner</Link>
+          {isOrganizer && (
+            <>
+              <Link to="/my-events">Mes événements</Link>
+              <Link to="/scan">Scanner</Link>
+            </>
           )}
           <span>{user.full_name}</span>
           <span className="badge">{user.role}</span>
@@ -45,6 +53,9 @@ export default function App() {
           <Route path="/" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/scan" element={<Scan />} />
+          <Route path="/create" element={<CreateEvent />} />
+          <Route path="/manage/:id" element={<EventManage />} />
+          <Route path="/my-events" element={<MyEvents />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
