@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import apiClient from "../api/client";
 import { useAuth } from "../context/AuthContext";
+
+const socket = io("http://localhost:4000");
 
 export default function EventDetail() {
   const { id } = useParams();
@@ -11,6 +14,29 @@ export default function EventDetail() {
 
   useEffect(() => {
     apiClient.get(`/events/${id}`).then((res) => setEvent(res.data));
+
+    socket.emit("join-event", id);
+
+    const handleUpdate = (data) => {
+      setEvent((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          categories: prev.categories.map((cat) =>
+            cat.id === data.categoryId
+              ? { ...cat, quantity_sold: data.quantitySold }
+              : cat
+          ),
+        };
+      });
+    };
+
+    socket.on("tickets-update", handleUpdate);
+
+    return () => {
+      socket.emit("leave-event", id);
+      socket.off("tickets-update", handleUpdate);
+    };
   }, [id]);
 
   const handleBuy = async (categoryId) => {
@@ -57,7 +83,7 @@ export default function EventDetail() {
           <div key={cat.id} className="ticket-row">
             <div className="ticket-row-info">
               <strong>{cat.name}</strong>
-              <p>{cat.price} € · {remaining} places restantes</p>
+              <p>{cat.price} € · <span style={{ color: remaining <= 5 && remaining > 0 ? "var(--danger)" : "inherit" }}>{remaining} places restantes</span></p>
             </div>
             <button onClick={() => handleBuy(cat.id)} disabled={remaining <= 0}>
               {remaining > 0 ? "Acheter" : "Épuisé"}
