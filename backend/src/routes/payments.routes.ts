@@ -2,6 +2,7 @@ import { Router } from "express";
 import Stripe from "stripe";
 import { pool } from "../config/db";
 import { authenticate, AuthRequest } from "../middleware/auth";
+import { emitTicketsUpdate } from "../config/socket";
 
 const router = Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
@@ -76,8 +77,9 @@ router.post("/webhook", async (req, res) => {
          VALUES ($1, $2, gen_random_uuid()::text, 'valid') RETURNING id`,
         [category_id, user_id]
       );
-      await pool.query(
-        "UPDATE ticket_categories SET quantity_sold = quantity_sold + 1 WHERE id = $1",
+      const updatedCat = await pool.query(
+        `UPDATE ticket_categories SET quantity_sold = quantity_sold + 1
+         WHERE id = $1 RETURNING event_id, quantity_sold, quantity_total`,
         [category_id]
       );
       await pool.query(
@@ -85,6 +87,9 @@ router.post("/webhook", async (req, res) => {
          VALUES ($1, $2, $3, 'succeeded')`,
         [ticket.rows[0].id, session.id, (session.amount_total || 0) / 100]
       );
+
+      const { event_id, quantity_sold, quantity_total } = updatedCat.rows[0];
+      emitTicketsUpdate(event_id, Number(category_id), quantity_sold, quantity_total);
     } catch (err) {
       console.error("Erreur traitement webhook", err);
     }

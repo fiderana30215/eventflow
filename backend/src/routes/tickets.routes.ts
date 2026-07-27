@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { pool } from "../config/db";
 import { authenticate, AuthRequest } from "../middleware/auth";
 import { enqueueTicketEmail } from "../queues/email.queue";
+import { emitTicketsUpdate } from "../config/socket";
 
 const router = Router();
 
@@ -42,6 +43,18 @@ router.post("/purchase", authenticate, async (req: AuthRequest, res) => {
     );
 
     await client.query("COMMIT");
+
+    // Émet la mise à jour du compteur en temps réel à tous les visiteurs de cette page événement
+    const eventInfo = await pool.query(
+      "SELECT event_id FROM ticket_categories WHERE id = $1",
+      [category_id]
+    );
+    emitTicketsUpdate(
+      eventInfo.rows[0].event_id,
+      Number(category_id),
+      cat.quantity_sold + 1,
+      cat.quantity_total
+    );
 
     // Récupère infos user + event pour l'email
     const info = await pool.query(

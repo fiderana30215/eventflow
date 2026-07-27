@@ -9,6 +9,8 @@ import oauthRoutes from "./routes/oauth.routes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import path from "path";
+import { createServer } from "http";
+import { initSocket } from "./config/socket";
 import eventsRoutes from "./routes/events.routes";
 import ticketsRoutes from "./routes/tickets.routes";
 import checkinsRoutes from "./routes/checkins.routes";
@@ -43,4 +45,6 @@ app.use("/api/checkins", checkinsRoutes);
 app.use("/api/payments", paymentsRoutes);
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+const httpServer = createServer(app);
+initSocket(httpServer);
+httpServer.listen(PORT, () => console.log(`Backend running on port ${PORT}`));

@@ -29,14 +29,22 @@ export default function MyTickets() {
             <p>
               {t.category_name} · {new Date(t.start_date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
             </p>
-            <p style={{ fontSize: 12, opacity: 0.7 }}>Code : {t.qr_code}</p>
           </div>
-          <span className="badge" style={{
-            background: t.status === "valid" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
-            color: t.status === "valid" ? "var(--success)" : "var(--danger)"
-          }}>
-            {t.status === "valid" ? "Valide" : t.status === "used" ? "Utilisé" : "Annulé"}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {t.status === "valid" && (
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(t.qr_code)}`}
+                alt="QR code du billet"
+                style={{ borderRadius: 6, background: "white", padding: 4 }}
+              />
+            )}
+            <span className="badge" style={{
+              background: t.status === "valid" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+              color: t.status === "valid" ? "var(--success)" : "var(--danger)"
+            }}>
+              {t.status === "valid" ? "Valide" : t.status === "used" ? "Utilisé" : "Annulé"}
+            </span>
+          </div>
         </div>
       ))}
     </div>
