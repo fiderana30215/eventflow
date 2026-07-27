@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { pool } from "../config/db";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
+import { upload } from "../config/upload";
 
 const router = Router();
 
@@ -251,5 +252,59 @@ router.get("/:id/stats", authenticate, authorize("organizer", "admin"), async (r
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
+/**
+ * @swagger
+ * /events/{id}/cover-image:
+ *   post:
+ *     summary: Uploader l'image de couverture (flyer) d'un événement
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Image mise à jour
+ */
+router.post(
+  "/:id/cover-image",
+  authenticate,
+  authorize("organizer", "admin"),
+  upload.single("image"),
+  async (req: AuthRequest, res) => {
+    if (!req.file) return res.status(400).json({ error: "Aucune image fournie" });
+
+    try {
+      const imageUrl = `/uploads/${req.file.filename}`;
+      const result = await pool.query(
+        `UPDATE events SET cover_image_url = $1, updated_at = NOW()
+         WHERE id = $2 AND organizer_id = $3 RETURNING *`,
+        [imageUrl, req.params.id, req.user!.id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Non autorisé ou introuvable" });
+      }
+      res.json(result.rows[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Erreur serveur" });
+    }
+  }
+);
 
 export default router;

@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes";
 import oauthRoutes from "./routes/oauth.routes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
+import path from "path";
 import eventsRoutes from "./routes/events.routes";
 import ticketsRoutes from "./routes/tickets.routes";
 import checkinsRoutes from "./routes/checkins.routes";
@@ -18,7 +19,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
 app.use(
   rateLimit({
@@ -32,6 +33,7 @@ app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", oauthRoutes);

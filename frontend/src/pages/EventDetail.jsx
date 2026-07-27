@@ -28,8 +28,11 @@ export default function EventDetail() {
 
   if (!event) return <p className="empty-state">Chargement...</p>;
 
+  const imageUrl = event.cover_image_url ? `http://localhost:4000${event.cover_image_url}` : null;
+
   return (
     <div className="page" style={{ maxWidth: 700 }}>
+      {imageUrl && <img src={imageUrl} alt={event.title} className="event-banner" />}
       <span className="badge">{new Date(event.start_date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
       <h1 className="page-title" style={{ marginTop: 12 }}>{event.title}</h1>
       <p className="page-subtitle">{event.description}</p>

@@ -26,11 +26,24 @@ export default function Events() {
       <div className="event-grid">
         {events.map((ev) => (
           <Link key={ev.id} to={`/events/${ev.id}`} className="event-card">
-            <span className="badge">{new Date(ev.start_date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
-            <h3>{ev.title}</h3>
-            <div className="event-meta">📍 {ev.location}</div>
-            <div className="event-meta">🕒 {new Date(ev.start_date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
-            <div className="event-meta">Organisé par {ev.organizer_name}</div>
+            {ev.cover_image_url ? (
+              <img
+                className="event-card-image"
+                src={`http://localhost:4000${ev.cover_image_url}`}
+                alt={ev.title}
+              />
+            ) : (
+              <div className="event-card-image" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 13 }}>
+                Pas de flyer
+              </div>
+            )}
+            <div className="event-card-body">
+              <span className="badge">{new Date(ev.start_date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+              <h3>{ev.title}</h3>
+              <div className="event-meta">📍 {ev.location}</div>
+              <div className="event-meta">🕒 {new Date(ev.start_date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
+              <div className="event-meta">Organisé par {ev.organizer_name}</div>
+            </div>
           </Link>
         ))}
       </div>
