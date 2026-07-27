@@ -121,6 +121,33 @@ textarea:focus {
   color: var(--text);
 }
 
+.nav-icon-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.nav-icon-link:hover {
+  color: var(--text);
+  background: var(--bg-card);
+}
+
+.nav-icon-link.secondary {
+  border: none;
+  background: transparent;
+  padding: 8px;
+}
+
+.nav-icon-link.secondary:hover {
+  background: var(--bg-card);
+}
+
 .navbar-user {
   display: flex;
   align-items: center;

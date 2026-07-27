@@ -17,9 +17,14 @@ export default function MyEvents() {
     <div className="page">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h1 className="page-title" style={{ marginBottom: 0 }}>Mes événements</h1>
-        <Link to="/create">
-          <button>+ Créer un événement</button>
-        </Link>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Link to="/">
+            <button className="secondary">Voir tous les événements</button>
+          </Link>
+          <Link to="/create">
+            <button>+ Créer un événement</button>
+          </Link>
+        </div>
       </div>
       <p className="page-subtitle">Gère tes événements, ajoute des billets et publie-les.</p>
 

@@ -6,6 +6,7 @@ export default function EventManage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
+  const [stats, setStats] = useState(null);
   const [catForm, setCatForm] = useState({ name: "", price: "", quantity_total: "" });
   const [editForm, setEditForm] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -24,6 +25,7 @@ export default function EventManage() {
         end_date: res.data.end_date?.slice(0, 16),
       });
     });
+    apiClient.get(`/events/${id}/stats`).then((res) => setStats(res.data));
   };
 
   useEffect(() => {
@@ -129,6 +131,23 @@ export default function EventManage() {
 
       {message && <div className="form-message">{message}</div>}
       {error && <div className="form-error">{error}</div>}
+
+      {!editing && stats && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+          <div className="card" style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.total_tickets_sold}</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Billets vendus</div>
+          </div>
+          <div className="card" style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 800 }}>{Number(stats.total_revenue).toLocaleString("fr-FR")} €</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Revenu total</div>
+          </div>
+          <div className="card" style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 800 }}>{stats.total_checkins}</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Entrées validées</div>
+          </div>
+        </div>
+      )}
 
       {editing ? (
         <form onSubmit={handleSaveEdit} className="card" style={{ marginBottom: 28 }}>
