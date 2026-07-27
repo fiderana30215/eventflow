@@ -307,4 +307,106 @@ router.post(
   }
 );
 
+/**
+ * @swagger
+ * /events/{id}:
+ *   put:
+ *     summary: Modifier un événement (organisateur, propriétaire uniquement)
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               location: { type: string }
+ *               start_date: { type: string, format: date-time }
+ *               end_date: { type: string, format: date-time }
+ *     responses:
+ *       200:
+ *         description: Événement modifié
+ *       404:
+ *         description: Non autorisé ou introuvable
+ */
+router.put("/:id", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
+  const { title, description, location, start_date, end_date } = req.body;
+  if (!title || !start_date || !end_date) {
+    return res.status(400).json({ error: "Champs manquants" });
+  }
+  try {
+    const result = await pool.query(
+      `UPDATE events
+       SET title = $1, description = $2, location = $3, start_date = $4, end_date = $5, updated_at = NOW()
+       WHERE id = $6 AND organizer_id = $7
+       RETURNING *`,
+      [title, description, location, start_date, end_date, req.params.id, req.user!.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Non autorisé ou introuvable" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+/**
+ * @swagger
+ * /events/{id}:
+ *   delete:
+ *     summary: Supprimer un événement (organisateur, propriétaire uniquement)
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Événement supprimé
+ *       404:
+ *         description: Non autorisé ou introuvable
+ *       409:
+ *         description: Impossible de supprimer, des billets ont déjà été vendus
+ */
+router.delete("/:id", authenticate, authorize("organizer", "admin"), async (req: AuthRequest, res) => {
+  try {
+    const soldCheck = await pool.query(
+      `SELECT COALESCE(SUM(quantity_sold), 0) AS total_sold
+       FROM ticket_categories WHERE event_id = $1`,
+      [req.params.id]
+    );
+    if (Number(soldCheck.rows[0].total_sold) > 0) {
+      return res.status(409).json({ error: "Impossible de supprimer : des billets ont déjà été vendus" });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM events WHERE id = $1 AND organizer_id = $2 RETURNING id",
+      [req.params.id, req.user!.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Non autorisé ou introuvable" });
+    }
+    res.json({ message: "Événement supprimé" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 export default router;
